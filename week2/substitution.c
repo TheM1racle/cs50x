@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 void encrypt(char key[27], char key_lower[27], char message[]);
 void convert_to_lower(char key_lower[27]);
 void convert_to_upper(char key[27]);
+void decrypt(char key[27], char key_lower[27], char message[]);
+char decrypt_char(char c, char key[]);
+
+
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    if (argc != 3)
     {
-        printf("Usage: ./substitution key\n");
+        printf("Usage: ./substitution key  (1 encrypt OR 0 decrypt)  \n");
         return 1;
     }
     
@@ -28,18 +34,19 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
+
+    bool seen[26] = {false};
     for (int i = 0; i < 26; i++)
     {
-    for (int j = i + 1; j < 26; j++)
-    {
-        // Check for duplicates (case-insensitive)
-        if (tolower(argv[1][i]) == tolower(argv[1][j]))
+        int index = tolower(argv[1][i]) - 'a';
+
+        if (seen[index])
         {
             printf("Key contains duplicate characters.\n");
-            return 1; // THIS IS CRITICAL TO STOP THE PROGRAM
+            return 1;
         }
+        seen[index] = true;
     }
-}
 
     char key[27];
     char key_lower[27];
@@ -54,8 +61,16 @@ int main(int argc, char *argv[])
     printf("plaintext:");
     fgets(message, sizeof(message), stdin);
     message[strcspn(message, "\n")] = '\0';
-
-    encrypt(key, key_lower, message);
+    int tip = atoi(argv[2]);
+    //if tip > 0 -> success TRUE
+    if (tip)
+    {
+        encrypt(key, key_lower, message);
+    }
+    else
+    {
+        decrypt(key, key_lower, message);
+    }
     printf("ciphertext:%s\n", message);
 
 
@@ -84,6 +99,18 @@ void encrypt(char key[27], char key_lower[27], char message[])
     }
 }
 
+void decrypt(char key[27], char key_lower[27], char message[])
+{
+    
+    for (int i = 0, length = strlen(message); i < length; i++)
+    {
+        char c = message[i];
+        c = decrypt_char(c, key);
+        message[i] = c;
+
+    }
+}
+
 void convert_to_lower(char key_lower[27])
 {
     for (int i = 0, n = strlen(key_lower); i < n; i++)
@@ -105,4 +132,21 @@ void convert_to_upper(char key[27])
         }
     }
 
+}
+
+char decrypt_char(char c, char key[])
+{
+    // 1. Ищем букву 'c' внутри ключа 'key'
+    for (int i = 0; i < 26; i++)
+    {
+        // Сравниваем регистронезависимо
+        if (tolower(c) == tolower(key[i]))
+        {
+            // 2. Нашли индекс! 
+            // Теперь возвращаем букву из обычного алфавита
+            if (isupper(c)) return i + 'A';
+            else return i + 'a';
+        }
+    }
+    return c; // Если это не буква (пробел, точка и т.д.), возвращаем как есть
 }
