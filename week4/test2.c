@@ -6,8 +6,8 @@ const int HEADER_SIZE = 44;
 
 int main(void)
 {
-    FILE *output = fopen("elnur.wav", "r");
-    FILE *read = fopen("input.wav", "r");
+    FILE *output = fopen("elnur.txt", "r");
+    FILE *read = fopen("input.txt", "r");
     uint8_t header[8];
     if (read == NULL)
     {
@@ -21,5 +21,6 @@ int main(void)
         {
             printf("%c", c);
         }
+        printf("\n");
     }
 }
